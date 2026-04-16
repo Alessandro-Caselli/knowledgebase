@@ -1,7 +1,7 @@
-import { auth } from '@/lib/auth';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
-export default auth((req) => {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Public routes
@@ -9,8 +9,10 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
-  // Protected routes
-  if (!req.auth) {
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+
+  // Not logged in → redirect to login
+  if (!token) {
     const loginUrl = new URL('/login', req.url);
     loginUrl.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(loginUrl);
@@ -18,13 +20,13 @@ export default auth((req) => {
 
   // Admin-only routes
   if (pathname.startsWith('/dashboard/admin')) {
-    if (req.auth.user?.role !== 'admin') {
+    if (token.role !== 'admin') {
       return NextResponse.redirect(new URL('/dashboard', req.url));
     }
   }
 
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],

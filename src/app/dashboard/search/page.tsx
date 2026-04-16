@@ -11,7 +11,7 @@ export default function SearchPage() {
   const [searched, setSearched] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [catFilter, setCatFilter] = useState('');
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     fetch('/api/categories').then(r => r.json()).then(d => setCategories(d.categories || []));
