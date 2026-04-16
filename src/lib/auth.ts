@@ -1,5 +1,6 @@
 import NextAuth from 'next-auth';
 import AzureAD from 'next-auth/providers/microsoft-entra-id';
+import Credentials from 'next-auth/providers/credentials';
 import { getDb } from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -15,6 +16,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         },
       },
     }),
+    // Local dev only — disabled in production
+    ...(process.env.NODE_ENV !== 'production' ? [
+      Credentials({
+        id: 'local-admin',
+        name: 'Local Admin',
+        credentials: { password: { label: 'Dev Password', type: 'password' } },
+        async authorize(credentials) {
+          if (credentials?.password !== (process.env.LOCAL_ADMIN_PASSWORD || 'admin123')) return null;
+          const db = getDb();
+          const id = 'local-admin-00000000-0000-0000-0000-000000000000';
+          const existing = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+          if (!existing) {
+            db.prepare(`INSERT INTO users (id, email, name, role, azure_id, last_login)
+              VALUES (?, ?, ?, 'admin', 'local-dev', datetime('now'))`)
+              .run(id, 'admin@local.dev', 'Local Admin');
+          } else {
+            db.prepare(`UPDATE users SET last_login = datetime('now') WHERE id = ?`).run(id);
+          }
+          return { id, email: 'admin@local.dev', name: 'Local Admin', role: 'admin' };
+        },
+      })
+    ] : []),
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
@@ -43,13 +66,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return true;
     },
 
-    async jwt({ token, user, account, trigger }) {
+    async jwt({ token, user, account }) {
       if (account && user?.email) {
-        const db = getDb();
-        const dbUser = db.prepare('SELECT * FROM users WHERE email = ?').get(user.email) as any;
-        if (dbUser) {
-          token.userId = dbUser.id;
-          token.role = dbUser.role;
+        // For credentials provider, user object has role directly
+        if (account.type === 'credentials') {
+          token.userId = (user as any).id;
+          token.role = (user as any).role;
+        } else {
+          const db = getDb();
+          const dbUser = db.prepare('SELECT * FROM users WHERE email = ?').get(user.email) as any;
+          if (dbUser) {
+            token.userId = dbUser.id;
+            token.role = dbUser.role;
+          }
         }
       }
       return token;
