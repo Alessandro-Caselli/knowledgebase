@@ -139,7 +139,7 @@ export default function DocumentsPage() {
                         <Clock size={11} />
                         {formatDistanceToNow(new Date(doc.updated_at + 'Z'), { addSuffix: true })}
                       </span>
-                      {doc.tags && JSON.parse(doc.tags || '[]').slice(0, 3).map((tag: string) => (
+                      {Array.isArray(doc.tags) && doc.tags.slice(0, 3).map((tag: string) => (
                         <span key={tag} className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">#{tag}</span>
                       ))}
                     </div>

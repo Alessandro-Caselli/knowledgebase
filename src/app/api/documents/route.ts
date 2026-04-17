@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { getDb } from '@/lib/db';
 import { getVisibleCategoryIds, canWrite } from '@/lib/permissions';
 import { v4 as uuidv4 } from 'uuid';
+import { parseTags } from '@/lib/utils';
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -64,7 +65,7 @@ export async function GET(req: NextRequest) {
   const total = docs.length; // simplified count
 
   return NextResponse.json({
-    documents: docs.map(d => ({ ...d, tags: JSON.parse(d.tags || '[]') })),
+    documents: docs.map(d => ({ ...d, tags: parseTags(d.tags) })),
     total, page, pages: Math.ceil(total / limit),
   });
 }
@@ -100,5 +101,5 @@ export async function POST(req: NextRequest) {
     .run(uuidv4(), userId, id, JSON.stringify({ title }));
 
   const doc = db.prepare('SELECT * FROM documents WHERE id = ?').get(id) as any;
-  return NextResponse.json({ ...doc, tags: JSON.parse(doc.tags || '[]') }, { status: 201 });
+  return NextResponse.json({ ...doc, tags: parseTags(doc.tags) }, { status: 201 });
 }

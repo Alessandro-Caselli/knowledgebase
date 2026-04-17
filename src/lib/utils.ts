@@ -5,6 +5,24 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Safely parse a tags field that may be:
+ * - a valid JSON array string: '["tag1","tag2"]'
+ * - a comma-separated plain string: 'tag1,tag2'  (legacy)
+ * - a single plain word: 'ciao'  (legacy)
+ * - null / undefined / ''
+ */
+export function parseTags(raw: string | null | undefined): string[] {
+  if (!raw || !raw.trim()) return [];
+  const trimmed = raw.trim();
+  // Try JSON first
+  if (trimmed.startsWith('[')) {
+    try { return JSON.parse(trimmed) as string[]; } catch {}
+  }
+  // Fallback: treat as comma-separated plain text
+  return trimmed.split(',').map(t => t.trim()).filter(Boolean);
+}
+
 export function formatBytes(bytes: number, decimals = 2) {
   if (bytes === 0) return '0 Bytes';
   const k = 1024;

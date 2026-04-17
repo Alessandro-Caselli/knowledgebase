@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getDb } from '@/lib/db';
 import { canRead } from '@/lib/permissions';
+import { parseTags } from '@/lib/utils';
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -29,6 +30,6 @@ export async function GET(req: NextRequest) {
   });
 
   return NextResponse.json({
-    favorites: visible.map(d => ({ ...d, tags: JSON.parse(d.tags || '[]') })),
+    favorites: visible.map(d => ({ ...d, tags: parseTags(d.tags) })),
   });
 }

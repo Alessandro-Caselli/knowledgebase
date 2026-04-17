@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getDb } from '@/lib/db';
+import { parseTags } from '@/lib/utils';
 
 // GET /api/templates — list all templates (admin only to create, everyone can use)
 export async function GET(req: NextRequest) {
@@ -18,6 +19,6 @@ export async function GET(req: NextRequest) {
   `).all() as any[];
 
   return NextResponse.json({
-    templates: templates.map(t => ({ ...t, tags: JSON.parse(t.tags || '[]') })),
+    templates: templates.map(t => ({ ...t, tags: parseTags(t.tags) })),
   });
 }

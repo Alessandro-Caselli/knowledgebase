@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { getDb } from '@/lib/db';
 import { canRead, canWrite, getEffectivePermission } from '@/lib/permissions';
 import { v4 as uuidv4 } from 'uuid';
+import { parseTags } from '@/lib/utils';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  return NextResponse.json({ ...doc, tags: JSON.parse(doc.tags || '[]') });
+  return NextResponse.json({ ...doc, tags: parseTags(doc.tags) });
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -57,7 +58,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     status = ?, version = ?, updated_by = ?, updated_at = datetime('now') WHERE id = ?
   `).run(
     title ?? existing.title, content ?? existing.content, summary ?? existing.summary,
-    category_id ?? existing.category_id, JSON.stringify(tags ?? JSON.parse(existing.tags || '[]')),
+    category_id ?? existing.category_id, JSON.stringify(tags ?? parseTags(existing.tags)),
     status ?? existing.status, newVersion, userId, id
   );
 
@@ -70,7 +71,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     .run(uuidv4(), userId, id, JSON.stringify({ title }));
 
   const updated = db.prepare('SELECT * FROM documents WHERE id = ?').get(id) as any;
-  return NextResponse.json({ ...updated, tags: JSON.parse(updated.tags || '[]') });
+  return NextResponse.json({ ...updated, tags: parseTags(updated.tags) });
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
