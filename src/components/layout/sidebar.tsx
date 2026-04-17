@@ -2,14 +2,16 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import { BookOpen, Search, LayoutDashboard, FolderOpen, Shield, Users, LogOut, ChevronRight, Plus, FileText } from 'lucide-react';
+import { BookOpen, Search, LayoutDashboard, FolderOpen, Shield, Users, LogOut, ChevronRight, Plus, FileText, Activity, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
-  { href: '/dashboard/search', label: 'Search', icon: <Search size={18} /> },
-  { href: '/dashboard/documents', label: 'Documents', icon: <FileText size={18} /> },
-  { href: '/dashboard/categories', label: 'Categories', icon: <FolderOpen size={18} /> },
+  { href: '/dashboard/search', label: 'Cerca', icon: <Search size={18} /> },
+  { href: '/dashboard/documents', label: 'Documenti', icon: <FileText size={18} /> },
+  { href: '/dashboard/favorites', label: 'Preferiti', icon: <Heart size={18} /> },
+  { href: '/dashboard/activity', label: 'Attività', icon: <Activity size={18} /> },
+  { href: '/dashboard/categories', label: 'Categorie', icon: <FolderOpen size={18} /> },
 ];
 
 const adminItems = [
@@ -56,7 +58,7 @@ export function Sidebar() {
         <div className="px-4 pt-4">
           <Link href="/dashboard/documents/new"
             className="flex items-center justify-center gap-2 w-full py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors">
-            <Plus size={16} /> New Document
+            <Plus size={16} /> Nuovo documento
           </Link>
         </div>
       )}

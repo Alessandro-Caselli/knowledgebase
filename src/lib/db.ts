@@ -139,6 +139,10 @@ function initSchema(db: Database.Database) {
   const safeAlter = (sql: string) => { try { db.exec(sql); } catch {} };
   safeAlter(`ALTER TABLE users ADD COLUMN password_hash TEXT`);
   safeAlter(`ALTER TABLE users ADD COLUMN is_local INTEGER NOT NULL DEFAULT 0`);
+  // New feature migrations
+  safeAlter(`ALTER TABLE documents ADD COLUMN is_template INTEGER NOT NULL DEFAULT 0`);
+  safeAlter(`ALTER TABLE documents ADD COLUMN review_date TEXT`);
+  safeAlter(`ALTER TABLE documents ADD COLUMN template_name TEXT`);
 
   // Seed local admin
   const { v4: uuidv4 } = require('uuid');

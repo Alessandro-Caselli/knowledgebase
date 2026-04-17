@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
   const userId = session.user.id!;
   const userRole = session.user.role || 'member';
   const body = await req.json();
-  const { title, content, summary, category_id, tags = [], status = 'draft' } = body;
+  const { title, content, summary, category_id, tags = [], status = 'draft', is_template = 0, template_name, review_date } = body;
 
   if (!title?.trim()) return NextResponse.json({ error: 'Title is required' }, { status: 400 });
 
@@ -87,9 +87,9 @@ export async function POST(req: NextRequest) {
   const db = getDb();
   const id = uuidv4();
   db.prepare(`
-    INSERT INTO documents (id, title, content, summary, category_id, tags, status, created_by, updated_by)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(id, title, content || '', summary || '', category_id || null, JSON.stringify(tags), status, userId, userId);
+    INSERT INTO documents (id, title, content, summary, category_id, tags, status, is_template, template_name, review_date, created_by, updated_by)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(id, title, content || '', summary || '', category_id || null, JSON.stringify(tags), status, is_template ? 1 : 0, template_name || null, review_date || null, userId, userId);
 
   db.prepare(`
     INSERT INTO document_versions (id, document_id, title, content, version, changed_by, change_summary)
